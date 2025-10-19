@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:form_validator/form_validator.dart';
 import 'package:job_buddy/services/auth_service.dart';
 import 'package:job_buddy/global/app_routes.dart';
+import 'package:job_buddy/widgets/custom_textfieldform.dart';
 
 class ForgotPasswordView extends StatefulWidget {
   const ForgotPasswordView({super.key});
@@ -10,10 +12,17 @@ class ForgotPasswordView extends StatefulWidget {
 }
 
 class _ForgotPasswordViewState extends State<ForgotPasswordView> {
-  final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final auth = AuthService();
+  final _emailController = TextEditingController();
+  final _authService = AuthService();
+
+  bool _isValid = false;
   bool _isLoading = false;
+
+  void _validateForm() {
+    final valid = _formKey.currentState?.validate() ?? false;
+    setState(() => _isValid = valid);
+  }
 
   Future<void> _sendResetEmail() async {
     if (!_formKey.currentState!.validate()) return;
@@ -21,10 +30,9 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
     setState(() => _isLoading = true);
 
     try {
-      await auth.sendPasswordReset(_emailController.text.trim());
+      await _authService.sendPasswordReset(_emailController.text.trim());
 
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Password reset email sent! Check your inbox.'),
@@ -37,6 +45,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
         (route) => false,
       );
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}')),
       );
@@ -53,11 +62,14 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final isWide = width > 600;
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: Center(
         child: Container(
-          width: 400,
+          width: isWide ? 400 : width * 0.9,
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -72,6 +84,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
           ),
           child: Form(
             key: _formKey,
+            onChanged: _validateForm,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -87,58 +100,64 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Enter your registered email and we’ll send a password reset link.',
+                  'Enter your registered email and we’ll send you a link to reset your password.',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.black54),
                 ),
                 const SizedBox(height: 24),
-                TextFormField(
+
+                // Email Field
+                CustomTextField(
                   controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(),
-                  ),
+                  label: 'Email',
                   keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email.';
-                    }
-                    final emailRegex = RegExp(
-                      r'^[^@]+@[^@]+\.[^@]+',
-                    ); // simple email pattern
-                    if (!emailRegex.hasMatch(value)) {
-                      return 'Please enter a valid email address.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _sendResetEmail,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 24,
-                    ),
+                  validator: ValidationBuilder()
+                      .required('Email is required')
+                      .email('Please enter a valid email address')
+                      .build(),
+                  onChanged: (_) => Future.delayed(
+                    const Duration(milliseconds: 300),
+                    _validateForm,
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(
-                          'Send Reset Link',
-                          style: TextStyle(
-                            color: Colors.white,
-                          ),
-                        ),
                 ),
+
+                const SizedBox(height: 24),
+
+                // Submit Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isValid && !_isLoading ? _sendResetEmail : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      disabledBackgroundColor: Colors.grey[400],
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Send Reset Link',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                  ),
+                ),
+
                 const SizedBox(height: 16),
+
+                // Back to Login
                 TextButton(
                   onPressed: () {
                     Navigator.pushNamedAndRemoveUntil(

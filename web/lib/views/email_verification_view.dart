@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:job_buddy/global/app_routes.dart';
 import 'package:job_buddy/services/auth_service.dart';
@@ -12,34 +11,13 @@ class EmailVerificationView extends StatefulWidget {
 
 class _EmailVerificationViewState extends State<EmailVerificationView> {
   final auth = AuthService();
-  Timer? timer;
   bool isVerified = false;
   bool isResending = false;
+  bool isChecking = false;
 
   @override
   void initState() {
     super.initState();
-    _checkVerification();
-    timer = Timer.periodic(
-      const Duration(seconds: 3),
-      (_) => _checkVerification(),
-    );
-  }
-
-  Future<void> _checkVerification() async {
-    await auth.reloadUser();
-    final user = auth.currentUser;
-    if (user != null && user.emailVerified) {
-      timer?.cancel();
-      if (mounted) {
-        setState(() => isVerified = true);
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoute.home.path,
-          (route) => false,
-        );
-      }
-    }
   }
 
   Future<void> _resendEmail(BuildContext context) async {
@@ -54,12 +32,6 @@ class _EmailVerificationViewState extends State<EmailVerificationView> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Verification email sent again!')),
     );
-  }
-
-  @override
-  void dispose() {
-    timer?.cancel();
-    super.dispose();
   }
 
   @override
@@ -96,13 +68,13 @@ class _EmailVerificationViewState extends State<EmailVerificationView> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'A verification link has been sent to your email. Please verify your account to continue.',
+                'A verification link has been sent to your email. Once verified, tap “Check Verification” below.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.black54),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: () => isResending ? null : _resendEmail(context),
+                onPressed: isResending ? null : () => _resendEmail(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
                   padding: const EdgeInsets.symmetric(
@@ -121,11 +93,11 @@ class _EmailVerificationViewState extends State<EmailVerificationView> {
                       )
                     : const Text(
                         'Resend Email',
-                        style: TextStyle(
-                          color: Colors.white,
-                        ),
+                        style: TextStyle(color: Colors.white),
                       ),
               ),
+              const SizedBox(height: 12),
+
               const SizedBox(height: 16),
               TextButton(
                 onPressed: () async {

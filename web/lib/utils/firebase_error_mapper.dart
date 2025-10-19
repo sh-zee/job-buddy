@@ -37,6 +37,8 @@ class FirebaseErrorMapper {
         throw 'The sign-in popup was closed before completing.';
       case 'cancelled-popup-request':
         throw 'Only one popup request is allowed at a time. Please try again.';
+      case 'email-already-in-use':
+        throw 'The email address is already in use by another account.';
       default:
         throw 'An unknown error occurred. Please try again later.';
     }

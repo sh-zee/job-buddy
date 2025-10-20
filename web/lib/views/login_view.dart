@@ -206,7 +206,7 @@ class _LoginViewState extends State<LoginView> {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'Sign in with Google',
+                          'Continue with Google',
                           style: GoogleFonts.roboto(
                             fontWeight: FontWeight.w500,
                             fontSize: 14,
@@ -298,14 +298,8 @@ class _LoginViewState extends State<LoginView> {
 
   Future<void> _loginWithGoogle(BuildContext context) async {
     final user = await authService.signInWithGoogle();
-    if (!context.mounted) return;
 
     if (user != null) {
-      await AppDialog.show(
-        context,
-        message: 'Logged in successfully with Google!',
-        type: DialogType.success,
-      );
       if (!context.mounted) return;
       Navigator.pushNamedAndRemoveUntil(
         context,

@@ -38,23 +38,36 @@ class AuthService {
     }
   }
 
+  // Future<UserCredential?> signInWithGoogle() async {
+  //   try {
+  //     _googleProvider.addScope(
+  //       'https://www.googleapis.com/auth/contacts.readonly',
+  //     );
+  //     _googleProvider.setCustomParameters({
+  //       'login_hint': 'user@example.com',
+  //     });
+
+  //     final cred = await _auth.signInWithPopup(_googleProvider);
+
+  //     return cred;
+  //   } on FirebaseAuthException catch (e) {
+  //     throw FirebaseErrorMapper.toMessage(e.code);
+  //   } catch (_) {
+  //     throw 'Google sign-in failed. Please try again.';
+  //   }
+  // }
+
   Future<UserCredential?> signInWithGoogle() async {
-    try {
-      _googleProvider.addScope(
-        'https://www.googleapis.com/auth/contacts.readonly',
-      );
-      _googleProvider.setCustomParameters({
-        'login_hint': 'user@example.com',
-      });
+    _googleProvider.addScope(
+      'https://www.googleapis.com/auth/contacts.readonly',
+    );
+    _googleProvider.setCustomParameters({
+      'login_hint': 'user@example.com',
+    });
 
-      final cred = await _auth.signInWithPopup(_googleProvider);
+    final cred = await _auth.signInWithPopup(_googleProvider);
 
-      return cred;
-    } on FirebaseAuthException catch (e) {
-      throw FirebaseErrorMapper.toMessage(e.code);
-    } catch (_) {
-      throw 'Google sign-in failed. Please try again.';
-    }
+    return cred;
   }
 
   // --- Sign Out ---

@@ -233,7 +233,7 @@ class _SignUpViewState extends State<SignUpView> {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'Sign in with Google',
+                          'Continue with Google',
                           style: GoogleFonts.roboto(
                             fontWeight: FontWeight.w500,
                             fontSize: 14,
@@ -305,29 +305,15 @@ class _SignUpViewState extends State<SignUpView> {
   }
 
   Future<void> _loginWithGoogle(BuildContext context) async {
-    try {
-      final user = await authService.signInWithGoogle();
-      if (!context.mounted) return;
+    final user = await authService.signInWithGoogle();
+    if (!context.mounted) return;
 
-      if (user != null) {
-        await AppDialog.show(
-          context,
-          message: 'Logged in successfully with Google!',
-          type: DialogType.success,
-        );
-        if (!context.mounted) return;
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoute.home.path,
-          (route) => false,
-        );
-      }
-    } catch (e) {
+    if (user != null) {
       if (!context.mounted) return;
-      await AppDialog.show(
+      Navigator.pushNamedAndRemoveUntil(
         context,
-        message: 'Google sign-in failed: $e',
-        type: DialogType.error,
+        AppRoute.home.path,
+        (route) => false,
       );
     }
   }

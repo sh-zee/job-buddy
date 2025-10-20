@@ -34,7 +34,7 @@ class FirebaseErrorMapper {
       case 'user-token-expired':
         throw 'Your authentication token has expired. Please log in again.';
       case 'popup-closed-by-user':
-        throw 'The sign-in popup was closed before completing.';
+        throw 'Google sign-in was cancelled.';
       case 'cancelled-popup-request':
         throw 'Only one popup request is allowed at a time. Please try again.';
       case 'email-already-in-use':
